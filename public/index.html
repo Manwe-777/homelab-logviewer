@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    // Apply cached Glance theme immediately to prevent flash
+    (function() {
+      var KEY = 'glanceThemeCache';
+      var vars = ['bgh','bgs','bgl','cm','tsm'];
+      var colors = ['primary','positive','negative'];
+
+      function apply(gt) {
+        var r = document.documentElement.style;
+        if (gt.scheme === 'light') {
+          r.setProperty('--scheme', '100% -');
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+          r.setProperty('--scheme', ' ');
+          document.documentElement.removeAttribute('data-theme');
+        }
+        vars.forEach(function(k) { if (gt[k]) r.setProperty('--' + k, gt[k]); });
+        colors.forEach(function(k) { if (gt[k]) r.setProperty('--color-' + k, gt[k]); });
+      }
+
+      try {
+        var cached = JSON.parse(localStorage.getItem(KEY));
+        if (cached) apply(cached);
+      } catch(e) {}
+
+      window.addEventListener('message', function(e) {
+        if (e.data && e.data.glanceTheme) {
+          var gt = e.data.glanceTheme;
+          apply(gt);
+          try { localStorage.setItem(KEY, JSON.stringify(gt)); } catch(e) {}
+        }
+      });
+    })();
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="tab-bar">
+      <div id="tabs"></div>
+      <div class="tab-actions">
+        <button id="btn-search" class="tab-action" title="Search (Ctrl+F)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <button id="btn-autoscroll" class="tab-action active" title="Auto-scroll to bottom">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+        </button>
+        <button id="btn-wrap" class="tab-action" title="Toggle word wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h15a3 3 0 1 1 0 6h-4"/><path d="m16 16-2 2 2 2"/><path d="M3 18h7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="log-viewport" class="log-viewport">
+      <div id="log-content" class="log-content"></div>
+      <div id="loading" class="loading">Loading log sources...</div>
+    </div>
+
+    <div id="search-bar" class="search-bar hidden">
+      <input type="text" id="search-input" class="search-input" placeholder="Search logs...">
+      <span id="search-info" class="search-info"></span>
+      <button id="search-prev" class="tab-action" title="Previous match">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+      </button>
+      <button id="search-next" class="tab-action" title="Next match">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <button id="search-close" class="search-close" title="Close search">&times;</button>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-left">
+        <span><span id="status-indicator" class="status-indicator"></span></span>
+        <span id="status-text">Connecting...</span>
+        <span id="truncated-notice" class="truncated-notice hidden">Showing last lines only</span>
+      </div>
+      <span id="line-count"></span>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

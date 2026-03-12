@@ -1,0 +1,19 @@
+services:
+  logviewer:
+    build: .
+    ports:
+      - "${PORT:-3102}:${PORT:-3102}"
+    volumes:
+      # Dev hot-reload
+      - ./public:/app/public
+      - ./server.js:/app/server.js
+      # Docker socket for reading container logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Optional: mount host log files
+      - /var/log:/logs:ro
+    environment:
+      - PORT=${PORT:-3102}
+      - LOG_SOURCES=${LOG_SOURCES}
+      - MAX_LINES=${MAX_LINES:-500}
+      - POLL_INTERVAL=${POLL_INTERVAL:-2000}
+    restart: unless-stopped
