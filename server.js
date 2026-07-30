@@ -217,6 +217,16 @@ function extractTimestamp(line) {
   return match ? match[1] : '';
 }
 
+// Serve backup state JSON for Glance dashboard
+app.get('/api/backup-state', async (req, res) => {
+  try {
+    const content = await readFile('/logs/homelab_snapshot_state.json', 'utf-8');
+    res.json(JSON.parse(content));
+  } catch (err) {
+    res.json({ status: 'error', message: 'State file not found', snapshot: '', timestamp: '', host: '' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Log viewer running on port ${PORT}`);
   console.log(`Configured sources: ${LOG_SOURCES.map(s => s.name + (s.container ? ` [docker:${s.container}]` : ` [file:${s.path}]`)).join(', ') || 'none'}`);
